@@ -1,0 +1,5 @@
+[package]
+name = "tauvm"
+version = "0.1.0"
+authors = ["runner"]
+edition = "2018"
