@@ -186,10 +186,48 @@ Takes a size in bytes and returns a free memory address if there is one.
 Frees `size` amount of bytes starting from the given address.
 
 ---
-### `frame.init`
+### `stack.init`
 #### Usage:
-`frame.init <offset> `
+`stack.init <offset> `
 #### Signature:
 `None -> None`
 #### Summary:
 Initialize a new stack frame and set the frame pointer to the top of the stack + the offset.
+
+---
+### `stack.pop`
+#### Usage:
+`stack.pop <save>`
+#### Signature:
+`None -> bytes`
+#### Summary:
+Pops the top frame except for the `save` amount of bytes.
+
+---
+### `stack.local`
+#### Usage:
+`stack.local <offset> `
+#### Signature:
+`None -> byte`
+#### Summary:
+Gets the byte at the bottom of the frame + the offset
+
+---
+## Output
+
+### `out.int`
+#### Usage:
+`out.int`
+#### Signature:
+`(out: int) -> None`
+#### Summary:
+Prints the top integer.
+
+---
+### `debug.dump`
+#### Usage:
+`debug.dump`
+#### Signature:
+`None -> None`
+#### Summary:
+Dumps the content of the entire stack.
