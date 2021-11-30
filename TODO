@@ -1,4 +1,7 @@
-Block-Based password and passwordless memory allocation
+Solve block copy borrowing error
+Add i32 block memory logic
+Add raw block pointer logic
+Block passwords
 Update Docs
 Extension-based hashmap architecture
 Boolean logic gates
