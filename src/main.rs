@@ -85,6 +85,10 @@ fn main() {
 
             "mem.free" => stack.free(),
 
+            "mem.copy_block" => stack.copyblock(),
+
+            "mem.copy_ptr" => stack.copy_ptr(),
+
             "stack.init" => stack.frame_init(second.unwrap().parse::<i32>().unwrap()),
 
             "stack.pop" => stack.frame_pop(second.unwrap().parse::<i32>().unwrap()),

@@ -10,7 +10,7 @@ pub struct Stack {
     checkpoints: HashMap<String, usize>,
     heap: [u8; HEAP_SIZE],
     freeblocks: Vec<FreeBlock>,
-    memblocks: HashMap<i32, MemBlock>,
+    memblocks: HashMap<usize, MemBlock>,
     frames: Vec<usize>,
     nextblock: i32
 }
@@ -211,7 +211,7 @@ impl Stack {
             if block.end - block.start >= size {
                 ret = block.start as i64;
                 block.start = block.start + size;
-                self.memblocks.insert(self.nextblock, MemBlock {
+                self.memblocks.insert(self.nextblock as usize, MemBlock {
                     start: ret as usize,
                     end: ret as usize + size - 1,
                     size,
@@ -235,24 +235,28 @@ impl Stack {
 
     pub fn free(&mut self) {
         let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
-        let block = self.memblocks.get(&(blocknum as i32)).unwrap();
+        let block = self.memblocks.get(&(blocknum)).unwrap();
         self.freeblocks.push(FreeBlock {
             start: block.start,
             end: block.start + (block.size - 1),
         });
-        self.memblocks.remove(&(blocknum as i32));
+        self.memblocks.remove(&(blocknum));
     }
 
     pub fn copyblock(&mut self) {
-        let mut start = 0;
-        let mut end = 0;
-        let blocknum = i64::from_be_bytes(self.get_top_i64()) as i32;
+        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
         let block = self.memblocks.get(&blocknum).unwrap();
-        let start = block.start;
-        let end = block.end;
-        for i in &self.heap[start..=end].to_vec() {
+        for i in &self.heap[block.start..=block.end].to_vec() {
             self.push(*i)
         }
+    }
+
+    pub fn copy_ptr(&mut self) {
+        let ptr = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let block = self.memblocks.get(&blocknum).unwrap();
+        let ret = self.heap[block.start + ptr];
+        self.push(ret);
     }
 
     pub fn i64_store(&mut self) {
