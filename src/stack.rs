@@ -243,6 +243,16 @@ impl Stack {
         self.memblocks.remove(&(blocknum as i32));
     }
 
+    pub fn copyblock(&mut self) {
+        let mut slice = &self.heap[0..=1];
+        let blocknum = i64::from_be_bytes(self.get_top_i64()) as i32;
+        let block = self.memblocks.get(&blocknum).unwrap();
+        slice = &self.heap[block.start..=block.end];
+        for i in slice {
+            self.push(*i)
+        }
+    }
+
     pub fn i64_store(&mut self) {
         let mut address = i64::from_be_bytes(self.get_top_i64());
         let val = self.get_top_i64();
