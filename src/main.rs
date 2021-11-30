@@ -78,7 +78,11 @@ fn main() {
             "goto" => linum = stack.goto(String::from(second.unwrap())),
 
             "if" => {
-                linum = stack.if_smt(linum, String::from(second.unwrap()), String::from(third.unwrap()))
+                linum = stack.if_smt(
+                    linum,
+                    String::from(second.unwrap()),
+                    String::from(third.unwrap()),
+                )
             }
 
             "mem.malloc" => stack.malloc(),
@@ -98,14 +102,12 @@ fn main() {
             "int.store" => stack.i64_store(),
 
             "int.load" => stack.i64_load(),
-            
+
             "int.local" => stack.int_local(second.unwrap().parse::<usize>().unwrap()),
 
             "out.int" => stack.putint(),
 
-            "jmp" => {
-              linum = stack.jump()
-            }
+            "jmp" => linum = stack.jump(),
 
             "debug.dump" => stack.dump_stack(),
 

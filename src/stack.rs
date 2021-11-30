@@ -1,4 +1,4 @@
-use crate::memblock::{MemBlock, FreeBlock};
+use crate::memblock::{FreeBlock, MemBlock};
 use std::collections::HashMap;
 
 const STACK_SIZE: usize = 65_535;
@@ -12,7 +12,7 @@ pub struct Stack {
     freeblocks: Vec<FreeBlock>,
     memblocks: HashMap<usize, MemBlock>,
     frames: Vec<usize>,
-    nextblock: i32
+    nextblock: i32,
 }
 
 impl Stack {
@@ -28,7 +28,7 @@ impl Stack {
             }],
             memblocks: HashMap::new(),
             frames: Vec::new(),
-            nextblock: 1
+            nextblock: 1,
         }
     }
 
@@ -181,27 +181,27 @@ impl Stack {
     }
 
     pub fn goto(&self, point: String) -> usize {
-      *self.checkpoints.get(&point).unwrap()
+        *self.checkpoints.get(&point).unwrap()
     }
 
     pub fn if_smt(&mut self, linum: usize, t: String, f: String) -> usize {
         let boolean = self.top();
         if boolean == 1 {
-          if t == "NULL" {
-            return linum 
-          }
-          return self.goto(t);
+            if t == "NULL" {
+                return linum;
+            }
+            return self.goto(t);
         } else {
-          if f == "NULL" {
-            return linum
-          }
-          return self.goto(f);
+            if f == "NULL" {
+                return linum;
+            }
+            return self.goto(f);
         }
     }
 
     pub fn jump(&mut self) -> usize {
-      let ret = i64::from_be_bytes(self.get_top_i64()) as usize;
-      ret
+        let ret = i64::from_be_bytes(self.get_top_i64()) as usize;
+        ret
     }
 
     pub fn malloc(&mut self) {
@@ -211,12 +211,15 @@ impl Stack {
             if block.end - block.start >= size {
                 ret = block.start as i64;
                 block.start = block.start + size;
-                self.memblocks.insert(self.nextblock as usize, MemBlock {
-                    start: ret as usize,
-                    end: ret as usize + size - 1,
-                    size,
-                    password: None
-                });
+                self.memblocks.insert(
+                    self.nextblock as usize,
+                    MemBlock {
+                        start: ret as usize,
+                        end: ret as usize + size - 1,
+                        size,
+                        password: None,
+                    },
+                );
                 ret = self.nextblock as i64;
                 self.nextblock += 1;
                 break;
@@ -259,6 +262,23 @@ impl Stack {
         self.push(ret);
     }
 
+    pub fn mem_write(&mut self) {
+        let (mut size, mut start) = (0, 0);
+        let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
+        {
+            let block = self.memblocks.get(&blocknum).unwrap();
+            size = block.size;
+            start = block.start;
+        }
+        let mut to_write: Vec<u8> = Vec::new();
+        for i in 0..byteamount {
+            to_write.push(self.top())
+        }
+        to_write.reverse();
+        if size < to_write.len() {}
+    }
+
     pub fn i64_store(&mut self) {
         let mut address = i64::from_be_bytes(self.get_top_i64());
         let val = self.get_top_i64();
@@ -280,38 +300,38 @@ impl Stack {
     }
 
     pub fn frame_init(&mut self, offset: i32) {
-        self.frames.push(self.pointer - offset as usize)        
+        self.frames.push(self.pointer - offset as usize)
     }
 
     pub fn frame_pop(&mut self, offset: i32) {
-      let mut save: Vec<u8> = Vec::new();
-      for _i in 0..offset {
-        save.push(self.top())
-      }
-      let save = save.iter().rev();
-      while self.pointer != *self.frames.last().unwrap() {
-          self.pop()
-      }
-      for i in save {
-        self.push(*i)
-      }
-      self.frames.pop();
+        let mut save: Vec<u8> = Vec::new();
+        for _i in 0..offset {
+            save.push(self.top())
+        }
+        let save = save.iter().rev();
+        while self.pointer != *self.frames.last().unwrap() {
+            self.pop()
+        }
+        for i in save {
+            self.push(*i)
+        }
+        self.frames.pop();
     }
 
     pub fn frame_get(&mut self, offset: usize) {
-      self.push(self.stack[*self.frames.last().unwrap() + offset])
+        self.push(self.stack[*self.frames.last().unwrap() + offset])
     }
 
     pub fn int_local(&mut self, offset: usize) {
-      let mut ret: [u8; 8] = [0,0,0,0,0,0,0,0];
-      let mut set = offset;
-      for i in 0..8 {
-        ret[i] = self.stack[*self.frames.last().unwrap() + set];
-        set += 1;
-      }
-      for i in ret {
-        self.push(i)
-      }
+        let mut ret: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
+        let mut set = offset;
+        for i in 0..8 {
+            ret[i] = self.stack[*self.frames.last().unwrap() + set];
+            set += 1;
+        }
+        for i in ret {
+            self.push(i)
+        }
     }
 
     pub fn putint(&mut self) {
