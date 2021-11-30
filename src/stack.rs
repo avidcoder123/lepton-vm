@@ -4,13 +4,15 @@ use std::collections::HashMap;
 const STACK_SIZE: usize = 65_535;
 const HEAP_SIZE: usize = 65_535;
 
+
 pub struct Stack {
     stack: [u8; STACK_SIZE],
     pointer: usize,
     checkpoints: HashMap<String, usize>,
     heap: [u8; HEAP_SIZE],
-    freeblocks: Vec<MemBlock>,
-    frames: Vec<usize>
+    blocks: Vec<MemBlock>,
+    frames: Vec<usize>,
+    nextblock: i32
 }
 
 impl Stack {
@@ -20,11 +22,14 @@ impl Stack {
             pointer: 0,
             checkpoints: HashMap::new(),
             heap: [0; 65_535],
-            freeblocks: vec![MemBlock {
+            blocks: vec![MemBlock {
                 start: 0,
-                end: 65_534,
+                end: HEAP_SIZE-1,
+                size: HEAP_SIZE,
+                password: None
             }],
-            frames: Vec::new()
+            frames: Vec::new(),
+            nextblock: 2
         }
     }
 
@@ -203,7 +208,7 @@ impl Stack {
     pub fn malloc(&mut self) {
         let size = i64::from_be_bytes(self.get_top_i64()) as usize;
         let mut ret: i64 = -1;
-        for block in &mut self.freeblocks {
+        for block in &mut self.blocks {
             if block.end - block.start >= size {
                 ret = block.start as i64;
                 block.start = block.start + size;
@@ -227,7 +232,7 @@ impl Stack {
         for i in 0..size {
             self.heap[start + i] = 0;
         }
-        self.freeblocks.push(MemBlock {
+        self.blocks.push(MemBlock {
             start,
             end: start + (size - 1),
         });
