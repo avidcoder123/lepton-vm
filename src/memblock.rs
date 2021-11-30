@@ -4,3 +4,8 @@ pub struct MemBlock {
     pub size: usize,
     pub password: Option<String>
 }
+
+pub struct FreeBlock {
+    pub start: usize,
+    pub end: usize
+}
