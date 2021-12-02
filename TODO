@@ -1,4 +1,4 @@
-Mem_wrie and mem_append functions
+Mem_write and mem_append functions
 Add raw block pointer logic (write and read)
 Block passwords
 Update Docs
