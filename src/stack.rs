@@ -281,8 +281,8 @@ impl Stack {
     }
 
     pub fn mem_append(&mut self) {
-        let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
         let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
         
         let block = self.memblocks.get(&blocknum).unwrap();
         let start = block.end;
@@ -359,6 +359,6 @@ impl Stack {
 
     pub fn dump_stack(&self) {
         println!("STACK DUMP:");
-        println! {"{:?}", &self.stack[0..=self.pointer]}
+        println! {"{:?}", &self.stack[0..self.pointer]}
     }
 }
