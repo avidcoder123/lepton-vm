@@ -93,6 +93,10 @@ fn main() {
 
             "mem.copy_ptr" => stack.copy_ptr(),
 
+            "mem.write" => stack.mem_write(),
+
+            "mem.append" => stack.mem_append(),
+
             "stack.init" => stack.frame_init(second.unwrap().parse::<i32>().unwrap()),
 
             "stack.pop" => stack.frame_pop(second.unwrap().parse::<i32>().unwrap()),

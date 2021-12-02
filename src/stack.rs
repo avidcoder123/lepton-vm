@@ -263,21 +263,37 @@ impl Stack {
     }
 
     pub fn mem_write(&mut self) {
-        let (mut size, mut start) = (0, 0);
-        let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
         let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
-        {
-            let block = self.memblocks.get(&blocknum).unwrap();
-            size = block.size;
-            start = block.start;
-        }
+        let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
+
+        
+        let block = self.memblocks.get(&blocknum).unwrap();
+        let start = block.start;
+        
         let mut to_write: Vec<u8> = Vec::new();
-        for i in 0..byteamount {
+        for _i in 0..byteamount {
             to_write.push(self.top())
         }
         to_write.reverse();
-        if size < to_write.len() {
-            //TODO
+        for (index, val) in to_write.iter().enumerate() {
+            self.heap[start + index] = *val;
+        }
+    }
+
+    pub fn mem_append(&mut self) {
+        let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
+        
+        let block = self.memblocks.get(&blocknum).unwrap();
+        let start = block.end;
+        
+        let mut to_write: Vec<u8> = Vec::new();
+        for _i in 0..byteamount {
+            to_write.push(self.top())
+        }
+        to_write.reverse();
+        for (index, val) in to_write.iter().enumerate() {
+            self.heap[start + index] = *val;
         }
     }
 

@@ -1,6 +1,4 @@
-Mem_write and mem_append functions
 Add raw block pointer logic (write and read)
-Block passwords
 Update Docs
 Extension-based hashmap architecture
 Boolean logic gates

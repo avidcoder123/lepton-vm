@@ -1,0 +1,9 @@
+int.const 400
+int.const 8
+mem.malloc
+int.const 8
+int.rot
+mem.write
+int.const 1
+mem.copy_block
+debug.dump
