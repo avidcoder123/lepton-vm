@@ -1,9 +1,15 @@
+;;Number to store
 int.const 400
+;;Allocate 8 bytes of heap
 int.const 8
 mem.malloc
+;;Set write amount to 8 bytes
 int.const 8
 int.rot
+;;Write 400 to block
 mem.write
+;;Copy block and retreive 400
 int.const 1
 mem.copy_block
-debug.dump
+;;Print it out
+out.int
