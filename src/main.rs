@@ -53,6 +53,9 @@ fn main() {
         let second = instructions.nth(0);
         let third = instructions.nth(0);
         match first.unwrap() {
+
+            "linum" => stack.i64_const(linum as i64),
+
             "int.const" => stack.i64_const(second.unwrap().parse::<i64>().unwrap()),
 
             "int.add" => stack.i64_add(),
@@ -91,8 +94,6 @@ fn main() {
 
             "mem.copy_block" => stack.copyblock(),
 
-            "mem.copy_ptr" => stack.copy_ptr(),
-
             "mem.write" => stack.mem_write(),
 
             "mem.append" => stack.mem_append(),
@@ -102,10 +103,6 @@ fn main() {
             "stack.pop" => stack.frame_pop(second.unwrap().parse::<i32>().unwrap()),
 
             "stack.local" => stack.frame_get(second.unwrap().parse::<usize>().unwrap()),
-
-            "int.store" => stack.i64_store(),
-
-            "int.load" => stack.i64_load(),
 
             "int.local" => stack.int_local(second.unwrap().parse::<usize>().unwrap()),
 

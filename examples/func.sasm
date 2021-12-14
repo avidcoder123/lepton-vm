@@ -1,0 +1,12 @@
+goto main
+checkpoint fun
+int.const 99
+out.int
+jmp
+checkpoint main
+linum
+int.const 3
+int.add
+goto fun
+int.const 10
+out.int

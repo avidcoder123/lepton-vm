@@ -1,4 +1,4 @@
-use crate::memblock::{FreeBlock, MemBlock};
+use crate::memblock::{MemBlock};
 use std::collections::HashMap;
 
 const STACK_SIZE: usize = 65_535;
@@ -8,8 +8,6 @@ pub struct Stack {
     stack: [u8; STACK_SIZE],
     pointer: usize,
     checkpoints: HashMap<String, usize>,
-    heap: [u8; HEAP_SIZE],
-    freeblocks: Vec<FreeBlock>,
     memblocks: HashMap<usize, MemBlock>,
     frames: Vec<usize>,
     nextblock: i32,
@@ -21,11 +19,6 @@ impl Stack {
             stack: [0; 65_535],
             pointer: 0,
             checkpoints: HashMap::new(),
-            heap: [0; 65_535],
-            freeblocks: vec![FreeBlock {
-                start: 0,
-                end: 65_534,
-            }],
             memblocks: HashMap::new(),
             frames: Vec::new(),
             nextblock: 1,
@@ -205,61 +198,26 @@ impl Stack {
     }
 
     pub fn malloc(&mut self) {
-        let size = i64::from_be_bytes(self.get_top_i64()) as usize;
-        let mut ret: i64 = -1;
-        for block in &mut self.freeblocks {
-            if block.end - block.start >= size {
-                ret = block.start as i64;
-                block.start = block.start + size;
-                self.memblocks.insert(
-                    self.nextblock as usize,
-                    MemBlock {
-                        start: ret as usize,
-                        end: ret as usize + size - 1,
-                        size,
-                        password: None,
-                    },
-                );
-                ret = self.nextblock as i64;
-                self.nextblock += 1;
-                break;
+        let blockid = self.nextblock;
+        self.memblocks.insert(
+            blockid as usize,
+            MemBlock {
+                content: Vec::new()
             }
-        }
-        if ret == -1 {
-            println!(
-                "Heap Overflow: Tried to allocate {} bytes, could not find free block",
-                size
-            );
-            std::process::exit(1);
-        } else {
-            self.i64_const(ret)
-        }
+        );
     }
 
     pub fn free(&mut self) {
         let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
-        let block = self.memblocks.get(&(blocknum)).unwrap();
-        self.freeblocks.push(FreeBlock {
-            start: block.start,
-            end: block.start + (block.size - 1),
-        });
         self.memblocks.remove(&(blocknum));
     }
 
     pub fn copyblock(&mut self) {
         let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
         let block = self.memblocks.get(&blocknum).unwrap();
-        for i in &self.heap[block.start..=block.end].to_vec() {
+        for i in &block.content {
             self.push(*i)
         }
-    }
-
-    pub fn copy_ptr(&mut self) {
-        let ptr = i64::from_be_bytes(self.get_top_i64()) as usize;
-        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
-        let block = self.memblocks.get(&blocknum).unwrap();
-        let ret = self.heap[block.start + ptr];
-        self.push(ret);
     }
 
     pub fn mem_write(&mut self) {
@@ -268,16 +226,13 @@ impl Stack {
 
         
         let block = self.memblocks.get(&blocknum).unwrap();
-        let start = block.start;
         
         let mut to_write: Vec<u8> = Vec::new();
         for _i in 0..byteamount {
             to_write.push(self.top())
         }
         to_write.reverse();
-        for (index, val) in to_write.iter().enumerate() {
-            self.heap[start + index] = *val;
-        }
+        block.content = to_write;
     }
 
     pub fn mem_append(&mut self) {
@@ -285,35 +240,14 @@ impl Stack {
         let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
         
         let block = self.memblocks.get(&blocknum).unwrap();
-        let start = block.end;
         
         let mut to_write: Vec<u8> = Vec::new();
         for _i in 0..byteamount {
             to_write.push(self.top())
         }
         to_write.reverse();
-        for (index, val) in to_write.iter().enumerate() {
-            self.heap[start + index] = *val;
-        }
-    }
-
-    pub fn i64_store(&mut self) {
-        let mut address = i64::from_be_bytes(self.get_top_i64());
-        let val = self.get_top_i64();
-        for byte in val {
-            self.heap[address as usize] = byte;
-            address += 1
-        }
-    }
-
-    pub fn i64_load(&mut self) {
-        let address = i64::from_be_bytes(self.get_top_i64());
-        let mut val = [0, 0, 0, 0, 0, 0, 0, 0];
-        for i in 0..8 {
-            val[i as usize] = self.heap[(address + i) as usize]
-        }
-        for s in val.iter() {
-            self.push(*s)
+        for val in to_write {
+            block.content.push(val);
         }
     }
 
