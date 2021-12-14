@@ -2,7 +2,6 @@ use crate::memblock::{MemBlock};
 use std::collections::HashMap;
 
 const STACK_SIZE: usize = 65_535;
-const HEAP_SIZE: usize = 65_535;
 
 pub struct Stack {
     stack: [u8; STACK_SIZE],
@@ -215,24 +214,27 @@ impl Stack {
     pub fn copyblock(&mut self) {
         let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
         let block = self.memblocks.get(&blocknum).unwrap();
-        for i in &block.content {
-            self.push(*i)
+        for i in block.content.clone() {
+            self.push(i)
         }
     }
 
     pub fn mem_write(&mut self) {
         let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
         let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
-
-        
-        let block = self.memblocks.get(&blocknum).unwrap();
         
         let mut to_write: Vec<u8> = Vec::new();
         for _i in 0..byteamount {
             to_write.push(self.top())
         }
         to_write.reverse();
-        block.content = to_write;
+        
+        self.memblocks.insert(
+            blocknum,
+            MemBlock {
+                content: to_write
+            }
+        );
     }
 
     pub fn mem_append(&mut self) {
@@ -241,14 +243,17 @@ impl Stack {
         
         let block = self.memblocks.get(&blocknum).unwrap();
         
-        let mut to_write: Vec<u8> = Vec::new();
+        let mut to_write: Vec<u8> = block.content.clone();
         for _i in 0..byteamount {
             to_write.push(self.top())
         }
         to_write.reverse();
-        for val in to_write {
-            block.content.push(val);
-        }
+        self.memblocks.insert(
+            blocknum,
+            MemBlock {
+                content: to_write
+            }
+        );
     }
 
     pub fn frame_init(&mut self, offset: i32) {
