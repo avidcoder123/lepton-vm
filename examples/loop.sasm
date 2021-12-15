@@ -1,22 +1,17 @@
-;;Store 1 in variable
-int.const 0
-int.const 0
-int.store
-;;Begin loop
-checkpoint loop
-;;Loads variable and adds 1
-int.const 0
-int.load
+stack.init 0
 int.const 1
-int.add
-int.copy
-;;Prints out variable
+int.const 8
+var.store i
+checkpoint loop
+var.load i
 int.copy
 out.int
-int.const 0
-int.store
-;;If the variable is 99, exit.
-int.const 99
+int.const 1
+int.add
+int.const 8
+var.store i
+var.load i
+int.const 100
 int.eq
 if end loop
 checkpoint end
