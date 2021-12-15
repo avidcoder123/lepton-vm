@@ -102,10 +102,6 @@ fn main() {
 
             "stack.pop" => stack.frame_pop(second.unwrap().parse::<i32>().unwrap()),
 
-            "stack.local" => stack.frame_get(second.unwrap().parse::<usize>().unwrap()),
-
-            "int.local" => stack.int_local(second.unwrap().parse::<usize>().unwrap()),
-
             "out.int" => stack.putint(),
 
             "jmp" => linum = stack.jump(),

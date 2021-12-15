@@ -261,7 +261,8 @@ impl Stack {
     }
 
     pub fn frame_init(&mut self, offset: i32) {
-        self.frames.push(self.pointer - offset as usize)
+        self.frames.push(self.pointer - offset as usize);
+        self.varstacks.push(Vec::new())
     }
 
     pub fn frame_pop(&mut self, offset: i32) {
@@ -277,21 +278,8 @@ impl Stack {
             self.push(*i)
         }
         self.frames.pop();
-    }
-
-    pub fn frame_get(&mut self, offset: usize) {
-        self.push(self.stack[*self.frames.last().unwrap() + offset])
-    }
-
-    pub fn int_local(&mut self, offset: usize) {
-        let mut ret: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
-        let mut set = offset;
-        for i in 0..8 {
-            ret[i] = self.stack[*self.frames.last().unwrap() + set];
-            set += 1;
-        }
-        for i in ret {
-            self.push(i)
+        for name in self.varstacks.pop().unwrap() {
+            self.variables.remove(&name);
         }
     }
 
@@ -314,6 +302,9 @@ impl Stack {
             )
         }
         data.reverse();
+        if self.variables.get(&name).is_none() {
+            self.varstacks.last_mut().unwrap().push(name.clone())
+        }
         self.variables.insert(
             name,
             data

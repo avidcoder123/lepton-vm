@@ -1,3 +1,4 @@
+stack.init 0
 int.const 100
 int.const 8
 var.store num
