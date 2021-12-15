@@ -1,7 +1,13 @@
-Variables
 Update Docs
+Internal error handling with Result<K, V>
 Extension-based hashmap architecture
 Boolean logic gates
 Floats
 Chars
-Actual error handling
+Primitive caveman try/catch error handling
+OS Extension Library
+
+
+----In Far Future----
+
+Mango Build Tool (MBT)
