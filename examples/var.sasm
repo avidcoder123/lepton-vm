@@ -1,0 +1,5 @@
+int.const 100
+int.const 8
+var.store num
+var.load num
+out.int

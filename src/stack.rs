@@ -10,6 +10,8 @@ pub struct Stack {
     memblocks: HashMap<usize, MemBlock>,
     frames: Vec<usize>,
     nextblock: i32,
+    variables: HashMap<String, Vec<u8>>,
+    varstacks: Vec<Vec<String>>
 }
 
 impl Stack {
@@ -19,6 +21,8 @@ impl Stack {
             pointer: 0,
             checkpoints: HashMap::new(),
             memblocks: HashMap::new(),
+            variables: HashMap::new(),
+            varstacks: Vec::new(),
             frames: Vec::new(),
             nextblock: 1,
         }
@@ -299,5 +303,27 @@ impl Stack {
     pub fn dump_stack(&self) {
         println!("STACK DUMP:");
         println! {"{:?}", &self.stack[0..self.pointer]}
+    }
+
+    pub fn store(&mut self, name: String) {
+        let size = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let mut data: Vec<u8> = Vec::new();
+        for _i in 0..size {
+            data.push(
+                self.top()
+            )
+        }
+        data.reverse();
+        self.variables.insert(
+            name,
+            data
+        );
+    }
+
+    pub fn load(&mut self, name: String) {
+        let data = self.variables.get(&name).unwrap();
+        for i in data.clone() {
+            self.push(i)
+        }
     }
 }

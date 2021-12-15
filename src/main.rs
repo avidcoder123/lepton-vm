@@ -112,6 +112,10 @@ fn main() {
 
             "debug.dump" => stack.dump_stack(),
 
+            "var.store" => stack.store(String::from(second.unwrap())),
+
+            "var.load" => stack.load(String::from(second.unwrap())),
+
             other => {
                 println!("Unknown command: {}", other);
                 std::process::exit(1)
