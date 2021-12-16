@@ -1,0 +1,24 @@
+
+;;START FN MAIN
+checkpoint main
+linum
+int.const 3
+int.add
+goto print
+goto end
+;;END FN MAIN
+
+;;START FN PRINT
+checkpoint print
+;;Store return jump address
+int.const 8
+var.store ret
+;;Print message
+int.const 123
+out.int
+;;Jump to return address
+var.load ret
+jmp
+;;END FN PRINT
+
+checkpoint end

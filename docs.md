@@ -102,24 +102,6 @@ Checks the equality of the top two ints.
 Swaps the top two integers on the stack.
 
 ---
-### `int.store`
-#### Usage:
-`int.store`
-#### Signature:
-`(value: int, address: int) -> None`
-#### Summary:
-Takes an `int` value and a heap address and stores the value in the heap.
-
----
-### `int.load`
-#### Usage:
-`int.load`
-#### Signature:
-`(address: int) -> int`
-#### Summary:
-Loads an `int` from an address value.
-
----
 ### `int.local`
 #### Usage:
 `int.local <offset>`
@@ -172,18 +154,18 @@ Jumps to an integer line number.
 #### Usage:
 `mem.malloc`
 #### Signature:
-`(size: int) -> int`
+`None -> None`
 #### Summary:
-Takes a size in bytes and returns a free memory address if there is one.
+Creates a new memory block.
 
 ---
 ### `mem.free`
 #### Usage:
 `mem.free`
 #### Signature:
-`(address: int, size: int) -> None`
+`(address: int) -> None`
 #### Summary:
-Frees `size` amount of bytes starting from the given address.
+Frees a memory block
 
 ---
 ### `stack.init`
@@ -204,15 +186,6 @@ Initialize a new stack frame and set the frame pointer to the top of the stack +
 Pops the top frame except for the `save` amount of bytes.
 
 ---
-### `stack.local`
-#### Usage:
-`stack.local <offset> `
-#### Signature:
-`None -> byte`
-#### Summary:
-Gets the byte at the bottom of the frame + the offset
-
----
 ## Output
 
 ### `out.int`
@@ -231,3 +204,21 @@ Prints the top integer.
 `None -> None`
 #### Summary:
 Dumps the content of the entire stack.
+
+---
+### `var.store`
+#### Usage: 
+`var.usage <name>`
+### Signature:
+`(data: bytes, size: int) -> None`
+#### Summary:
+Stores a local variable blound to the current stack frame.
+
+---
+### `var.load`
+#### Usage:
+`var.load <name>`
+#### Signature:
+`None -> bytes`
+#### Summary
+Loads a local variable by name.
