@@ -1,8 +1,8 @@
 mod memblock;
 mod stack;
+use colored::*;
 use stack::Stack;
 use std::env;
-use colored::*;
 
 fn main() {
     let mut stack = Stack::new();
@@ -54,10 +54,21 @@ fn main() {
         let second = instructions.nth(0);
         let third = instructions.nth(0);
         let errs = match first.unwrap() {
-
             "linum" => stack.i64_const(linum as i64),
 
-            "int.const" => stack.i64_const(second.unwrap().parse::<i64>().unwrap()),
+            "int.const" => {
+                match second {
+                    Some(e) => match e.parse::<i64>() {
+                        Ok(i) => stack.i64_const(i),
+                        Err(_) => Err(
+                            String::from("Expected number, got string")
+                        )
+                    },
+                    None => Err(
+                        String::from("Missing Argument")
+                    )
+                }
+            },
 
             "int.add" => stack.i64_add(),
 
@@ -80,30 +91,39 @@ fn main() {
             "checkpoint" => Ok(()),
 
             "goto" => {
-                let toJmp = stack.goto(String::from(second.unwrap()));
+                let to_jmp = stack.goto(String::from(second.unwrap()));
 
-                match toJmp {
+                match to_jmp {
                     Ok(e) => {
-                        linum = e; Ok(())
-                    },
+                        linum = e;
+                        Ok(())
+                    }
 
-                    Err(e) => Err(e)
+                    Err(e) => Err(e),
                 }
             }
 
             "if" => {
-                let toJmp = stack.if_smt(
-                    linum,
-                    String::from(second.unwrap()),
-                    String::from(third.unwrap()),
-                );
-
-                match toJmp {
-                    Ok(e) => {
-                        linum = e; 
-                        Ok(())
+                let to_jmp = match second {
+                    Some(e) => {
+                        match third {
+                            Some(i) => stack.if_smt(linum, e,i),
+                            None => Err(
+                                String::from("Missing Argument")
+                            )
+                        }
                     },
-                    Err(e) => Err(e)
+                    None => Err(
+                        String::from("Missing Argument")
+                    )
+                };
+
+                match to_jmp {
+                    Ok(e) => {
+                        linum = e;
+                        Ok(())
+                    }
+                    Err(e) => Err(e),
                 }
             }
 
@@ -117,9 +137,33 @@ fn main() {
 
             "mem.append" => stack.mem_append(),
 
-            "stack.init" => stack.frame_init(second.unwrap().parse::<i32>().unwrap()),
+            "stack.init" => {
+                match second {
+                    Some(e) => match e.parse::<i32>() {
+                        Ok(i) => stack.frame_init(i),
+                        Err(_) => Err(
+                            String::from("Expected number, got string")
+                        )
+                    },
+                    None => Err(
+                        String::from("Missing Argument")
+                    )
+                }
+            },
 
-            "stack.pop" => stack.frame_pop(second.unwrap().parse::<i32>().unwrap()),
+            "stack.pop" => {
+                match second {
+                    Some(e) => match e.parse::<i32>() {
+                        Ok(i) => stack.frame_pop(i),
+                        Err(_) => Err(
+                            String::from("Expected number, got string")
+                        )
+                    },
+                    None => Err(
+                        String::from("Missing Argument")
+                    )
+                }
+            },
 
             "out.int" => stack.putint(),
 
@@ -130,15 +174,48 @@ fn main() {
 
             "debug.dump" => stack.dump_stack(),
 
-            "var.store" => stack.store(String::from(second.unwrap())),
+            "var.store" => {
+                match second {
+                    Some(e) => stack.store(
+                        String::from(e)
+                    ),
+                    None => Err(
+                        String::from("Missing Argument")
+                    )
+                }
+            },
 
-            "var.load" => stack.load(String::from(second.unwrap())),
+            "var.load" => {
+                match second {
+                    Some(e) => stack.load(
+                        String::from(e)
+                    ),
+                    None => Err(
+                        String::from("Missing Argument")
+                    )
+                }
+            },
 
             other => {
-                println!("Unknown command: {}", other);
-                std::process::exit(1)
+                Err(
+                    String::from("Unknown Instruction")
+                )
             }
         };
+        if errs.is_err() {
+            println!(
+                "{}\n{}\n{}\n{}{}{} {}\n{}",
+                "Fatal Error:".red().bold(),
+                errs.err().unwrap().green(),
+                "~~~~~~~".red().bold(),
+                "Line ".purple(),
+                (linum + 1).to_string().purple(),
+                ":".purple(),
+                first.unwrap().yellow(),
+                "        ^ Here".red().bold()
+            );
+            std::process::exit(1);
+        }
         linum += 1;
         stack.linum = linum
     }

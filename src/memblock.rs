@@ -1,4 +1,4 @@
-#[derive (Debug)]
+#[derive(Debug)]
 pub struct MemBlock {
-    pub content: Vec<u8>
+    pub content: Vec<u8>,
 }

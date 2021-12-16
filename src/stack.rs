@@ -1,6 +1,6 @@
-use crate::memblock::{MemBlock};
-use std::collections::HashMap;
+use crate::memblock::MemBlock;
 use colored::*;
+use std::collections::HashMap;
 
 const STACK_SIZE: usize = 65_535;
 
@@ -31,7 +31,7 @@ impl Stack {
         }
     }
 
-    pub fn push(&mut self, val: u8) -> Result<(),String>{
+    pub fn push(&mut self, val: u8) -> Result<(), String> {
         if self.pointer == STACK_SIZE - 1 {
             return Err(format!(
                 "{}",
@@ -44,13 +44,11 @@ impl Stack {
     }
 
     pub fn pop(&mut self) -> Result<(), String> {
-        if self.pointer == 0 {
-            return Err(
-                format!(
-                    "{}",
-                    "Pop Error: Cannot pop from empty stack".green()
-                )
-            )
+        if self.pointer < 1 {
+            return Err(format!(
+                "{}",
+                "Pop Error: Cannot pop from empty stack".green()
+            ));
         }
         self.pointer -= 1;
         self.stack[self.pointer] = 0;
@@ -59,6 +57,12 @@ impl Stack {
 
     //Destructive top function
     pub fn top(&mut self) -> Result<u8, String> {
+        if self.pointer < 1 {
+            return Err(format!(
+                "{}",
+                "Pop Error: Cannot pop from empty stack".green()
+            ));
+        }
         self.pointer -= 1;
         let ret = self.stack[self.pointer];
         self.pointer += 1;
@@ -220,7 +224,7 @@ impl Stack {
                 "{} {}",
                 "Checkpoint Error: Could not find checkpoint named".green(),
                 point.green().bold()
-            ))
+            )),
         }
     }
 
@@ -249,8 +253,8 @@ impl Stack {
         self.memblocks.insert(
             blockid as usize,
             MemBlock {
-                content: Vec::new()
-            }
+                content: Vec::new(),
+            },
         );
         Ok(())
     }
@@ -259,12 +263,10 @@ impl Stack {
         let blocknum = i64::from_be_bytes(self.get_top_i64()?) as usize;
         match self.memblocks.remove(&(blocknum)) {
             Some(_) => Ok(()),
-            None => Err(
-                format!(
-                    "{}",
-                    "Free Error: Cannot free block which does not exist".green()
-                )
-            )
+            None => Err(format!(
+                "{}",
+                "Free Error: Cannot free block which does not exist".green()
+            )),
         }
     }
 
@@ -280,19 +282,15 @@ impl Stack {
     pub fn mem_write(&mut self) -> Result<(), String> {
         let blocknum = i64::from_be_bytes(self.get_top_i64()?) as usize;
         let byteamount = i64::from_be_bytes(self.get_top_i64()?) as usize;
-        
+
         let mut to_write: Vec<u8> = Vec::new();
         for _i in 0..byteamount {
             to_write.push(self.top()?)
         }
         to_write.reverse();
-        
-        self.memblocks.insert(
-            blocknum,
-            MemBlock {
-                content: to_write
-            }
-        );
+
+        self.memblocks
+            .insert(blocknum, MemBlock { content: to_write });
 
         Ok(())
     }
@@ -300,18 +298,16 @@ impl Stack {
     pub fn mem_append(&mut self) -> Result<(), String> {
         let blocknum = i64::from_be_bytes(self.get_top_i64()?) as usize;
         let byteamount = i64::from_be_bytes(self.get_top_i64()?) as usize;
-        
+
         let block = self.memblocks.get(&blocknum);
 
         if block.is_none() {
-            return Err(
-                format!(
-                    "{}",
-                    "Append Error: Cannot append to block which does not exist".green()
-                )
-            )
+            return Err(format!(
+                "{}",
+                "Append Error: Cannot append to block which does not exist".green()
+            ));
         }
-        
+
         let block = block.unwrap();
 
         let mut to_write: Vec<u8> = block.content.clone();
@@ -319,12 +315,8 @@ impl Stack {
             to_write.push(self.top()?)
         }
         to_write.reverse();
-        self.memblocks.insert(
-            blocknum,
-            MemBlock {
-                content: to_write
-            }
-        );
+        self.memblocks
+            .insert(blocknum, MemBlock { content: to_write });
 
         Ok(())
     }
@@ -342,12 +334,10 @@ impl Stack {
         }
         let save = save.iter().rev();
         if self.frames.last().is_none() {
-            return Err(
-                format!(
-                    "{}",
-                    "Frame Pop Error: Cannot pop frame which does not exist".green()
-                )
-            )
+            return Err(format!(
+                "{}",
+                "Frame Pop Error: Cannot pop frame which does not exist".green()
+            ));
         }
         while self.pointer != *self.frames.last().unwrap() {
             self.pop()?;
@@ -379,18 +369,13 @@ impl Stack {
         let size = i64::from_be_bytes(self.get_top_i64()?) as usize;
         let mut data: Vec<u8> = Vec::new();
         for _i in 0..size {
-            data.push(
-                self.top()?
-            )
+            data.push(self.top()?)
         }
         data.reverse();
         if self.variables.get(&name).is_none() {
             self.varstacks.last_mut().unwrap().push(name.clone())
         }
-        self.variables.insert(
-            name,
-            data
-        );
+        self.variables.insert(name, data);
         Ok(())
     }
 
