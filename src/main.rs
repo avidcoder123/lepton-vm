@@ -107,7 +107,11 @@ fn main() {
                 let to_jmp = match second {
                     Some(e) => {
                         match third {
-                            Some(i) => stack.if_smt(linum, e,i),
+                            Some(i) => stack.if_smt(
+                                linum, 
+                                String::from(e), 
+                                String::from(i)
+                            ),
                             None => Err(
                                 String::from("Missing Argument")
                             )
