@@ -1,3 +1,4 @@
 .vimrc
 target
 default.nix
+bench/bench
