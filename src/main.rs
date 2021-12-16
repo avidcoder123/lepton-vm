@@ -200,7 +200,7 @@ fn main() {
                 }
             },
 
-            other => {
+            _other => {
                 Err(
                     String::from("Unknown Instruction")
                 )
