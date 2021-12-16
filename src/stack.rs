@@ -58,20 +58,20 @@ impl Stack {
     }
 
     //Destructive top function
-    pub fn top(&mut self) -> u8 {
+    pub fn top(&mut self) -> Result<u8, String> {
         self.pointer -= 1;
         let ret = self.stack[self.pointer];
         self.pointer += 1;
-        self.pop();
-        ret
+        self.pop()?;
+        Ok(ret)
     }
 
-    fn get_top_i64(&mut self) -> [u8; 8] {
+    fn get_top_i64(&mut self) -> Result<[u8; 8], String> {
         let mut i: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
         for j in (0..=7).rev() {
-            i[j as usize] = self.top()
+            i[j as usize] = self.top()?;
         }
-        i
+        Ok(i)
     }
 
     pub fn i64_const(&mut self, n: i64) -> Result<(), String> {
@@ -83,8 +83,8 @@ impl Stack {
     }
 
     pub fn i64_add(&mut self) -> Result<(), String> {
-        let int2 = self.get_top_i64();
-        let int1 = self.get_top_i64();
+        let int2 = self.get_top_i64()?;
+        let int1 = self.get_top_i64()?;
 
         let int1 = i64::from_be_bytes(int1);
         let int2 = i64::from_be_bytes(int2);
@@ -99,8 +99,8 @@ impl Stack {
     }
 
     pub fn i64_sub(&mut self) -> Result<(), String> {
-        let int2 = self.get_top_i64();
-        let int1 = self.get_top_i64();
+        let int2 = self.get_top_i64()?;
+        let int1 = self.get_top_i64()?;
 
         let int1 = i64::from_le_bytes(int1);
         let int2 = i64::from_le_bytes(int2);
@@ -114,8 +114,8 @@ impl Stack {
     }
 
     pub fn i64_mul(&mut self) -> Result<(), String> {
-        let int2 = self.get_top_i64();
-        let int1 = self.get_top_i64();
+        let int2 = self.get_top_i64()?;
+        let int1 = self.get_top_i64()?;
 
         let int1 = i64::from_be_bytes(int1);
         let int2 = i64::from_be_bytes(int2);
@@ -130,8 +130,8 @@ impl Stack {
     }
 
     pub fn i64_div(&mut self) -> Result<(), String> {
-        let int2 = self.get_top_i64();
-        let int1 = self.get_top_i64();
+        let int2 = self.get_top_i64()?;
+        let int1 = self.get_top_i64()?;
 
         let int1 = i64::from_le_bytes(int1);
         let int2 = i64::from_le_bytes(int2);
@@ -145,9 +145,9 @@ impl Stack {
     }
 
     pub fn i64_copy(&mut self) -> Result<(), String> {
-        let i = self.get_top_i64();
+        let i = self.get_top_i64()?;
         for j in i {
-            self.push(j);
+            self.push(j)?;
         }
         for j in i {
             self.push(j)?;
@@ -157,8 +157,8 @@ impl Stack {
     }
 
     pub fn i64_gt(&mut self) -> Result<(), String> {
-        let int2 = self.get_top_i64();
-        let int1 = self.get_top_i64();
+        let int2 = self.get_top_i64()?;
+        let int1 = self.get_top_i64()?;
         let condition = int1 > int2;
         if condition {
             self.push(1)?;
@@ -170,8 +170,8 @@ impl Stack {
     }
 
     pub fn i64_lt(&mut self) -> Result<(), String> {
-        let int2 = self.get_top_i64();
-        let int1 = self.get_top_i64();
+        let int2 = self.get_top_i64()?;
+        let int1 = self.get_top_i64()?;
         let condition = int1 < int2;
         if condition {
             self.push(1)?;
@@ -183,8 +183,8 @@ impl Stack {
     }
 
     pub fn i64_eq(&mut self) -> Result<(), String> {
-        let int2 = self.get_top_i64();
-        let int1 = self.get_top_i64();
+        let int2 = self.get_top_i64()?;
+        let int1 = self.get_top_i64()?;
         let condition = int1 == int2;
         if condition {
             self.push(1)?;
@@ -196,8 +196,8 @@ impl Stack {
     }
 
     pub fn i64_rot(&mut self) -> Result<(), String> {
-        let int1 = self.get_top_i64();
-        let int2 = self.get_top_i64();
+        let int1 = self.get_top_i64()?;
+        let int2 = self.get_top_i64()?;
         for s in int1.iter() {
             self.push(*s)?;
         }
@@ -225,7 +225,7 @@ impl Stack {
     }
 
     pub fn if_smt(&mut self, linum: usize, t: String, f: String) -> Result<usize, String> {
-        let boolean = self.top();
+        let boolean = self.top()?;
         if boolean == 1 {
             if t == "NULL" {
                 return Ok(linum);
@@ -240,11 +240,11 @@ impl Stack {
     }
 
     pub fn jump(&mut self) -> Result<usize, String> {
-        let ret = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let ret = i64::from_be_bytes(self.get_top_i64()?) as usize;
         Ok(ret)
     }
 
-    pub fn malloc(&mut self) {
+    pub fn malloc(&mut self) -> Result<(), String> {
         let blockid = self.nextblock;
         self.memblocks.insert(
             blockid as usize,
@@ -252,10 +252,11 @@ impl Stack {
                 content: Vec::new()
             }
         );
+        Ok(())
     }
 
     pub fn free(&mut self) -> Result<(), String> {
-        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let blocknum = i64::from_be_bytes(self.get_top_i64()?) as usize;
         match self.memblocks.remove(&(blocknum)) {
             Some(_) => Ok(()),
             None => Err(
@@ -268,7 +269,7 @@ impl Stack {
     }
 
     pub fn copyblock(&mut self) -> Result<(), String> {
-        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let blocknum = i64::from_be_bytes(self.get_top_i64()?) as usize;
         let block = self.memblocks.get(&blocknum).unwrap();
         for i in block.content.clone() {
             self.push(i)?;
@@ -277,12 +278,12 @@ impl Stack {
     }
 
     pub fn mem_write(&mut self) -> Result<(), String> {
-        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
-        let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let blocknum = i64::from_be_bytes(self.get_top_i64()?) as usize;
+        let byteamount = i64::from_be_bytes(self.get_top_i64()?) as usize;
         
         let mut to_write: Vec<u8> = Vec::new();
         for _i in 0..byteamount {
-            to_write.push(self.top())
+            to_write.push(self.top()?)
         }
         to_write.reverse();
         
@@ -297,8 +298,8 @@ impl Stack {
     }
 
     pub fn mem_append(&mut self) -> Result<(), String> {
-        let blocknum = i64::from_be_bytes(self.get_top_i64()) as usize;
-        let byteamount = i64::from_be_bytes(self.get_top_i64()) as usize;
+        let blocknum = i64::from_be_bytes(self.get_top_i64()?) as usize;
+        let byteamount = i64::from_be_bytes(self.get_top_i64()?) as usize;
         
         let block = self.memblocks.get(&blocknum);
 
@@ -315,7 +316,7 @@ impl Stack {
 
         let mut to_write: Vec<u8> = block.content.clone();
         for _i in 0..byteamount {
-            to_write.push(self.top())
+            to_write.push(self.top()?)
         }
         to_write.reverse();
         self.memblocks.insert(
@@ -328,19 +329,19 @@ impl Stack {
         Ok(())
     }
 
-    pub fn frame_init(&mut self, offset: i32) {
+    pub fn frame_init(&mut self, offset: i32) -> Result<(), String> {
         self.frames.push(self.pointer - offset as usize);
-        self.varstacks.push(Vec::new())
+        self.varstacks.push(Vec::new());
+        Ok(())
     }
 
     pub fn frame_pop(&mut self, offset: i32) -> Result<(), String> {
         let mut save: Vec<u8> = Vec::new();
         for _i in 0..offset {
-            save.push(self.top())
+            save.push(self.top()?)
         }
         let save = save.iter().rev();
-        let frames = self.frames.last();
-        if frames.is_none() {
+        if self.frames.last().is_none() {
             return Err(
                 format!(
                     "{}",
@@ -348,7 +349,7 @@ impl Stack {
                 )
             )
         }
-        while self.pointer != *frames.unwrap() {
+        while self.pointer != *self.frames.last().unwrap() {
             self.pop()?;
         }
         for i in save {
@@ -362,22 +363,24 @@ impl Stack {
         Ok(())
     }
 
-    pub fn putint(&mut self) {
-        let i = self.get_top_i64();
+    pub fn putint(&mut self) -> Result<(), String> {
+        let i = self.get_top_i64()?;
         println!("{}", i64::from_be_bytes(i));
+        Ok(())
     }
 
-    pub fn dump_stack(&self) {
+    pub fn dump_stack(&self) -> Result<(), String> {
         println!("STACK DUMP:");
-        println! {"{:?}", &self.stack[0..self.pointer]}
+        println!("{:?}", &self.stack[0..self.pointer]);
+        Ok(())
     }
 
-    pub fn store(&mut self, name: String) {
-        let size = i64::from_be_bytes(self.get_top_i64()) as usize;
+    pub fn store(&mut self, name: String) -> Result<(), String> {
+        let size = i64::from_be_bytes(self.get_top_i64()?) as usize;
         let mut data: Vec<u8> = Vec::new();
         for _i in 0..size {
             data.push(
-                self.top()
+                self.top()?
             )
         }
         data.reverse();
@@ -388,12 +391,14 @@ impl Stack {
             name,
             data
         );
+        Ok(())
     }
 
-    pub fn load(&mut self, name: String) {
+    pub fn load(&mut self, name: String) -> Result<(), String> {
         let data = self.variables.get(&name).unwrap();
         for i in data.clone() {
-            self.push(i);
+            self.push(i)?;
         }
+        Ok(())
     }
 }

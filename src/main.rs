@@ -53,7 +53,7 @@ fn main() {
         }
         let second = instructions.nth(0);
         let third = instructions.nth(0);
-        match first.unwrap() {
+        let errs = match first.unwrap() {
 
             "linum" => stack.i64_const(linum as i64),
 
@@ -77,16 +77,34 @@ fn main() {
 
             "int.rot" => stack.i64_rot(),
 
-            "checkpoint" => (),
+            "checkpoint" => Ok(()),
 
-            "goto" => linum = stack.goto(String::from(second.unwrap())),
+            "goto" => {
+                let toJmp = stack.goto(String::from(second.unwrap()));
+
+                match toJmp {
+                    Ok(e) => {
+                        linum = e; Ok(())
+                    },
+
+                    Err(e) => Err(e)
+                }
+            }
 
             "if" => {
-                linum = stack.if_smt(
+                let toJmp = stack.if_smt(
                     linum,
                     String::from(second.unwrap()),
                     String::from(third.unwrap()),
-                )
+                );
+
+                match toJmp {
+                    Ok(e) => {
+                        linum = e; 
+                        Ok(())
+                    },
+                    Err(e) => Err(e)
+                }
             }
 
             "mem.malloc" => stack.malloc(),
@@ -105,7 +123,10 @@ fn main() {
 
             "out.int" => stack.putint(),
 
-            "jmp" => linum = stack.jump(),
+            "jmp" => {
+                linum = stack.jump().unwrap();
+                Ok(())
+            }
 
             "debug.dump" => stack.dump_stack(),
 
@@ -117,7 +138,7 @@ fn main() {
                 println!("Unknown command: {}", other);
                 std::process::exit(1)
             }
-        }
+        };
         linum += 1;
         stack.linum = linum
     }
