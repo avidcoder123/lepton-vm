@@ -1,10 +1,12 @@
 
 ;;START FN MAIN
 checkpoint main
+stack.init 0
 linum
 int.const 3
 int.add
 goto print
+stack.pop 0
 goto end
 ;;END FN MAIN
 

@@ -2,6 +2,7 @@ mod memblock;
 mod stack;
 use stack::Stack;
 use std::env;
+use colored::*;
 
 fn main() {
     let mut stack = Stack::new();
@@ -118,5 +119,6 @@ fn main() {
             }
         }
         linum += 1;
+        stack.linum = linum
     }
 }
