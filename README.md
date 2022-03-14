@@ -1,5 +1,8 @@
 # The Lepton Virtual Machine (LeViM)
 
+## Disclaimer
+LeViM is no longer maintained. The successor to LeViM is VPU, which may or may not have been released yet.
+
 ## Introduction
 The Lepton Virtual Machine is a modular and interpreted stack machine written in the Rust Programming Language. The goal of Lepton is to create a simple yet fast virtual machine that is extendable, uses low memory, and has fast start-up times.
 
